@@ -54,7 +54,7 @@ jobs:
       run: |
         source .venv/bin/activate
         qmk setup -y
-        qmk compile -kb <keyboard> -km <keymap>
+        qmk compile -kb keyball/${{ inputs.keyboard }} -km ${{ inputs.keymap }}
 
     - name: Compile and link
       run: qmk compile -j 4 -kb keyball/${{ inputs.keyboard }} -km ${{ inputs.keymap }}
