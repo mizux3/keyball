@@ -36,8 +36,23 @@ jobs:
     - name: Install a link to own source
       run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyball
 
-    - name: Install missing python modules
-      run: /usr/bin/python3 -m pip install -r __qmk__/requirements.txt
+    - name: Set up Python
+       uses: actions/setup-python@v5
+       with:
+       python-version: "3.11"
+
+    - name: Create virtual environment & install requirements
+      run: |
+      python3 -m venv .venv
+      source .venv/bin/activate
+      pip install --upgrade pip
+      pip install -r __qmk__/requirements.txt
+
+    - name: Build QMK
+      run: |
+      source .venv/bin/activate
+      qmk setup -y
+      qmk compile -kb <keyboard> -km <keymap>
 
     - name: Compile and link
       run: qmk compile -j 4 -kb keyball/${{ inputs.keyboard }} -km ${{ inputs.keymap }}
