@@ -41,13 +41,11 @@ jobs:
       with:
        python-version: "3.11"
 
-    - name: Create virtual environment & install requirements
+    - name: Install QMK python dependencies
       shell: bash
       run: |
-        python3 -m venv .venv
-        source .venv/bin/activate
-        pip install --upgrade pip
-        pip install -r __qmk__/requirements.txt
+        /opt/uv/tools/qmk/bin/python3 -m pip install --upgrade pip
+        /opt/uv/tools/qmk/bin/python3 -m pip install -r __qmk__/requirements.txt
 
     - name: Build QMK
       shell: bash
