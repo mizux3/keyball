@@ -42,6 +42,7 @@ jobs:
        python-version: "3.11"
 
     - name: Create virtual environment & install requirements
+      shell: bash
       run: |
         python3 -m venv .venv
         source .venv/bin/activate
