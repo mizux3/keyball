@@ -50,6 +50,7 @@ jobs:
         pip install -r __qmk__/requirements.txt
 
     - name: Build QMK
+      shell: bash
       run: |
         source .venv/bin/activate
         qmk setup -y
