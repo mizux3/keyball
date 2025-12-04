@@ -48,8 +48,8 @@ jobs:
         /opt/uv/tools/qmk/bin/python3 -m pip install --upgrade pip
         /opt/uv/tools/qmk/bin/python3 -m pip install -r __qmk__/requirements.txt
 
-    - name: Discover keyboards
-      run: qmk keyboards discover
+    - name: Import keyboard metadata
+      run: qmk import-keyboard __qmk__/keyboards/keyball/keyball39
 
     - name: Build QMK
       shell: bash
