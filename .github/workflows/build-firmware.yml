@@ -29,9 +29,6 @@ jobs:
 
     steps:
 
-    - name: qmk chk
-      run: docker run --rm ghcr.io/qmk/qmk_cli:latest which qmk
-
     - name: Show QMK version
       run: |
          qmk --version
