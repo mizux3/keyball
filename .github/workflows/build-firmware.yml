@@ -24,6 +24,8 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/qmk/qmk_cli:latest
+    env:
+      PATH: "/usr/bin:${PATH}"
 
     steps:
 
@@ -54,7 +56,7 @@ jobs:
 
     - name: Debug keyboard directory
       run: ls -l __qmk__/keyboards/keyball/keyball39
-
+  
     - name: Import keyboard metadata
       run: qmk import-keyboard __qmk__/keyboards/keyball/keyball39/info.json
 
