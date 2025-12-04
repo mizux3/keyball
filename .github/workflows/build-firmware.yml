@@ -23,9 +23,14 @@ jobs:
 
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/qmk/qmk_cli:0.22.14
+      image: ghcr.io/qmk/qmk_cli:latest
 
     steps:
+
+     - name: Install specific QMK version
+       run: |
+         pip install qmk==0.22.14
+         qmk --version
 
     - name: Checkout source
       uses: actions/checkout@v4
