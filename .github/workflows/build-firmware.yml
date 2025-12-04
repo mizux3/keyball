@@ -29,10 +29,8 @@ jobs:
 
     steps:
 
-
-    - name: Install specific QMK version
+    - name: Show QMK version
       run: |
-         pip install qmk==1.2.0
          qmk --version
 
     - name: Checkout source
