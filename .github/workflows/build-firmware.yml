@@ -52,10 +52,7 @@ jobs:
       shell: bash
       run: |
         qmk setup -y
-        qmk compile -kb keyball/${{ inputs.keyboard }} -km ${{ inputs.keymap }}
-
-    - name: Compile and link
-      run: qmk compile -j 4 -kb keyball/${{ inputs.keyboard }} -km ${{ inputs.keymap }}
+        qmk compile -kb ${{ inputs.keyboard }} -km ${{ inputs.keymap }}
 
     - name: Archive built firmware
       uses: actions/upload-artifact@v4
