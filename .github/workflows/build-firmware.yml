@@ -51,7 +51,6 @@ jobs:
     - name: Build QMK
       shell: bash
       run: |
-        qmk setup -y
         qmk compile -kb ${{ inputs.keyboard }} -km ${{ inputs.keymap }}
 
     - name: Archive built firmware
