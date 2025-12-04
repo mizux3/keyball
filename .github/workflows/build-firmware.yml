@@ -30,7 +30,7 @@ jobs:
 
     - name: Install specific QMK version
       run: |
-         pip install qmk==0.22.14
+         pip install qmk==1.2.0
          qmk --version
 
     - name: Checkout source
