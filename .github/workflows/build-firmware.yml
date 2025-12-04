@@ -42,6 +42,12 @@ jobs:
     - name: Install a link to own source
       run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyballt
 
+    - name: Install QMK python dependencies
+      shell: bash
+      run: |
+        /opt/uv/tools/qmk/bin/python3 -m pip install --upgrade pip
+        /opt/uv/tools/qmk/bin/python3 -m pip install -r __qmk__/requirements.txt
+
     - name: Build QMK
       shell: bash
       run: |
