@@ -25,9 +25,12 @@ jobs:
     container:
       image: ghcr.io/qmk/qmk_cli:latest
     env:
-      PATH: "/usr/bin:${PATH}"
+      PATH: "/usr/bin:/opt/uv/tools/qmk/bin:${PATH}"
 
     steps:
+
+    - name: qmk chk
+      run: docker run --rm ghcr.io/qmk/qmk_cli:latest which qmk
 
     - name: Show QMK version
       run: |
