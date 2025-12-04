@@ -40,13 +40,16 @@ jobs:
       uses: ./.github/actions/checkout-qmk_firmware
 
     - name: Install a link to own source
-      run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyballt
+      run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyball
 
     - name: Install QMK python dependencies
       shell: bash
       run: |
         /opt/uv/tools/qmk/bin/python3 -m pip install --upgrade pip
         /opt/uv/tools/qmk/bin/python3 -m pip install -r __qmk__/requirements.txt
+
+    - name: Discover keyboards
+      run: qmk keyboards discover
 
     - name: Build QMK
       shell: bash
