@@ -1,5 +1,7 @@
 # MCU name
-MCU = atmega32u4
+#MCU = atmega32u4
+
+MCU = rp2040
 
 # Bootloader selection
 BOOTLOADER = caterina

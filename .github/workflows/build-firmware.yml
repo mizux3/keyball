@@ -42,11 +42,16 @@ jobs:
     - name: Install a link to own source
       run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyball
 
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
     - name: Install QMK python dependencies
-      shell: bash
       run: |
-        /opt/uv/tools/qmk/bin/python3 -m pip install --upgrade pip
-        /opt/uv/tools/qmk/bin/python3 -m pip install -r __qmk__/requirements.txt
+        python3 -m pip install --upgrade pip
+        python3 -m pip install -r __qmk__/requirements.txt
+
     - name: Debug keyboard directory
       run: ls -l __qmk__/keyboards/keyball/keyball39
 
