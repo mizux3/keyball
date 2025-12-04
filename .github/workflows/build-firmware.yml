@@ -23,7 +23,7 @@ jobs:
 
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/qmk/qmk_cli:latest
+      image: ghcr.io/qmk/qmk_cli:0.22.14
 
     steps:
 
@@ -34,18 +34,7 @@ jobs:
       uses: ./.github/actions/checkout-qmk_firmware
 
     - name: Install a link to own source
-      run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyball
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-       python-version: "3.11"
-
-    - name: Install QMK python dependencies
-      shell: bash
-      run: |
-        /opt/uv/tools/qmk/bin/python3 -m pip install --upgrade pip
-        /opt/uv/tools/qmk/bin/python3 -m pip install -r __qmk__/requirements.txt
+      run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyballt
 
     - name: Build QMK
       shell: bash
