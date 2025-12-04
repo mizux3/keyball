@@ -51,7 +51,7 @@ jobs:
       run: ls -l __qmk__/keyboards/keyball/keyball39
 
     - name: Import keyboard metadata
-      run: qmk import-keyboard __qmk__/keyboards/keyball/keyball39
+      run: qmk import-keyboard __qmk__/keyboards/keyball/keyball39/info.json
 
     - name: Build QMK
       shell: bash
