@@ -39,8 +39,8 @@ jobs:
     - name: Checkout qmk_firmware
       uses: actions/checkout@v4
       with:
-        path: qmk_firmware
-        ref: qmk-0.22.14
+        path: qmk/qmk_firmware
+        ref: qmk-v0.22.14
         submodules: recursive
 
     #-- name: Install a link to own source
