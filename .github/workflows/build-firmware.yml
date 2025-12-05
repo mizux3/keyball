@@ -63,7 +63,7 @@ jobs:
         make keyball39:${{ inputs.keymap }}
 
     - name: Show QMK root contents
-      run: ls -l __qmk__
+      run: ls -l qmk_firmware
 
     - name: Archive built firmware
       uses: actions/upload-artifact@v4
