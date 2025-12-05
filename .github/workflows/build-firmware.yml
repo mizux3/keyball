@@ -49,7 +49,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: "3.11"
+        python-version: "3.11"  
 
     - name: Install QMK python dependencies (QMK venv)
       run: |
@@ -61,7 +61,7 @@ jobs:
     - name: Build QMK
       shell: bash
       run: |
-        qmk compile -kb keyball/${{ inputs.keyboard }} -km ${{ inputs.keymap }}
+        make keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
     - name: Archive built firmware
       uses: actions/upload-artifact@v4
