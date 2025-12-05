@@ -59,7 +59,7 @@ jobs:
     - name: Build QMK
       shell: bash
       run: |
-        cd __qmk__
+        cd qmk_firmware
         make keyball39:${{ inputs.keymap }}
 
     - name: Show QMK root contents
