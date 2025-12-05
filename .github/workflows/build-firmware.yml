@@ -62,7 +62,7 @@ jobs:
       shell: bash
       run: |
         cd __qmk__
-        make keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
+        make keyball39:${{ inputs.keymap }}
 
     - name: Show QMK root contents
       run: ls -l __qmk__
