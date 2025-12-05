@@ -5,10 +5,10 @@ on:
     inputs:
       keyboard:
         type: string
-        required: true    # 例: keyball39
+        required: true   # 例: keyball39
       keymap:
         type: string
-        required: true    # 例: default
+        required: true   # 例: default
 
 jobs:
   build:
@@ -21,51 +21,47 @@ jobs:
       PATH: "/usr/bin:/opt/uv/tools/qmk/bin:${PATH}"
 
     steps:
-      # あなたの keyball リポジトリ
+      # ユーザの keyball リポジトリ
       - name: Checkout keyball repo
         uses: actions/checkout@v4
 
-      - name: Show QMK CLI version
+      - name: Show QMK version
         run: qmk --version
 
-      # 純正 QMK 0.22.14 を qmk/ に clone
+      # QMK 0.22.14 を qmk/ に clone
       - name: Clone QMK 0.22.14
         run: |
           git clone https://github.com/qmk/qmk_firmware.git \
             --depth 1 --recurse-submodules --shallow-submodules \
             -b 0.22.14 qmk
-          ls -l
           ls -l qmk
 
-      # keyball39 を QMK の keyboards/keyball/ にリンク
-      - name: Link keyball keyboard directory
+      # キーボードのリンクを QMK へ
+      - name: Link keyball directory
         run: |
-          cd qmk
-          mkdir -p keyboards/keyball
-          # ルート直下に keyball39/ がある前提
-          ln -s ../keyball39 keyboards/keyball/keyball39
+          mkdir -p qmk/keyboards/keyball
+          ln -s $(pwd)/${{ inputs.keyboard }} qmk/keyboards/keyball/${{ inputs.keyboard }}
           echo "==== keyboards/keyball ===="
-          ls -R keyboards/keyball
+          ls -R qmk/keyboards/keyball
 
-      # QMK の Python 依存をインストール
+      # QMK の依存インストール
       - name: Install QMK python dependencies
         run: |
           cd qmk
           /opt/uv/tools/qmk/bin/python3 -m pip install -r requirements.txt
 
       # ビルド
-      - name: Build QMK
+      - name: Build firmware
         run: |
           cd qmk
           make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
-      # 生成物の確認
-      - name: List build artifacts
-        run: |
-          ls -R qmk/.build
+      # 生成物表示
+      - name: Show artifacts
+        run: ls -R qmk/.build
 
-      # uf2 / hex をアップロード
-      - name: Upload firmware
+      # アーティファクトを保存
+      - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.keyboard }}-${{ inputs.keymap }}-firmware
