@@ -12,8 +12,6 @@ on:
 
 jobs:
   build:
-    name: Build firmware ${{ inputs.keyboard }}:${{ inputs.keymap }}
-
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/qmk/qmk_cli:1.2.0
@@ -21,37 +19,39 @@ jobs:
       PATH: "/usr/bin:/opt/uv/tools/qmk/bin:${PATH}"
 
     steps:
-      - name: Checkout keyball repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Show QMK CLI version
+      - name: Show QMK version
         run: qmk --version
 
       - name: Clone QMK 0.22.14
         run: |
           git clone https://github.com/qmk/qmk_firmware.git \
-            --depth 1 --recurse-submodules --shallow-submodules \
-            -b 0.22.14 qmk
+            --depth=1 --recurse-submodules -b 0.22.14 qmk_firmware
+          ls -l qmk_firmware
 
-      - name: Link keyball keyboard directory
+      - name: Link keyboard into QMK
         run: |
-          cd qmk/keyboards
-          ln -s ../../qmk_firmware/keyboards/keyball keyball
-          ls keyball
+          mkdir -p qmk_firmware/keyboards/keyball
+          ln -s $(pwd)/${{ inputs.keyboard }} qmk_firmware/keyboards/keyball/${{ inputs.keyboard }}
+          ls -R qmk_firmware/keyboards/keyball
 
-      - name: Build QMK
+      - name: Install QMK python deps
         run: |
-          cd qmk
+          cd qmk_firmware
+          /opt/uv/tools/qmk/bin/python3 -m pip install -r requirements.txt || true
+
+      - name: Build firmware
+        run: |
+          cd qmk_firmware
           make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
-      - name: List build artifacts
-        run: |
-          ls -R qmk/.build
+      - name: List artifacts
+        run: ls -R qmk_firmware/.build
 
-      - name: Upload firmware
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.keyboard }}-${{ inputs.keymap }}-firmware
+          name: ${{ inputs.keyboard }}-${{ inputs.keymap }}
           path: |
-            qmk/.build/*.uf2
-            qmk/.build/*.hex
+            qmk_firmware/.build/*.uf2
+            qmk_firmware/.build/*.hex

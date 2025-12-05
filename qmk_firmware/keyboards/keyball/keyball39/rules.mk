@@ -1,70 +1,53 @@
-name: Build a firmware
+# MCU name
+#MCU = atmega32u4
 
-on:
-  workflow_call:
-    inputs:
-      keyboard:
-        type: string
-        required: true   # 例: keyball39
-      keymap:
-        type: string
-        required: true   # 例: default
+MCU = rp2040
 
-jobs:
-  build:
-    name: Build firmware ${{ inputs.keyboard }}:${{ inputs.keymap }}
+# Bootloader selection
+#BOOTLOADER = caterina
+BOOTLOADER  = rp2040
 
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/qmk/qmk_cli:1.2.0
-    env:
-      PATH: "/usr/bin:/opt/uv/tools/qmk/bin:${PATH}"
 
-    steps:
-      # ユーザの keyball リポジトリ
-      - name: Checkout keyball repo
-        uses: actions/checkout@v4
+# Link Time Optimization required for size.
+LTO_ENABLE = yes
 
-      - name: Show QMK version
-        run: qmk --version
+# Build Options
+BOOTMAGIC_ENABLE = no       # Enable Bootmagic Lite
+EXTRAKEY_ENABLE = no        # Audio control and System control
+CONSOLE_ENABLE = no         # Console for debug
+COMMAND_ENABLE = no         # Commands for debug and configuration
+NKRO_ENABLE = no            # Enable N-Key Rollover
+BACKLIGHT_ENABLE = no       # Enable keyboard backlight functionality
+AUDIO_ENABLE = no           # Audio output
 
-      # QMK 0.22.14 を qmk/ に clone
-      - name: Clone QMK 0.22.14
-        run: |
-          git clone https://github.com/qmk/qmk_firmware.git \
-            --depth 1 --recurse-submodules --shallow-submodules \
-            -b 0.22.14 qmk
-          ls -l qmk
+# Keyball39 is split keyboard.
+SPLIT_KEYBOARD = yes
 
-      # キーボードのリンクを QMK へ
-      - name: Link keyball directory
-        run: |
-          mkdir -p qmk/keyboards/keyball
-          ln -s $(pwd)/${{ inputs.keyboard }} qmk/keyboards/keyball/${{ inputs.keyboard }}
-          echo "==== keyboards/keyball ===="
-          ls -R qmk/keyboards/keyball
+# Optical sensor driver for trackball.
+POINTING_DEVICE_ENABLE = yes
+POINTING_DEVICE_DRIVER = custom
+SRC += drivers/pmw3360/pmw3360.c
+QUANTUM_LIB_SRC += spi_master.c # Optical sensor use SPI to communicate
 
-      # QMK の依存インストール
-      - name: Install QMK python dependencies
-        run: |
-          cd qmk
-          /opt/uv/tools/qmk/bin/python3 -m pip install -r requirements.txt
+# This is unnecessary for processing KC_MS_BTN*.
+MOUSEKEY_ENABLE = no
 
-      # ビルド
-      - name: Build firmware
-        run: |
-          cd qmk
-          make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
+# Enabled only one of RGBLIGHT and RGB_MATRIX if necessary.
+RGBLIGHT_ENABLE = no        # Enable RGBLIGHT
+RGB_MATRIX_ENABLE = no      # Enable RGB_MATRIX (not work yet)
+RGB_MATRIX_DRIVER = ws2812
 
-      # 生成物表示
-      - name: Show artifacts
-        run: ls -R qmk/.build
+# Do not enable SLEEP_LED_ENABLE. it uses the same timer as BACKLIGHT_ENABLE
+SLEEP_LED_ENABLE = no       # Breathing sleep LED during USB suspend
 
-      # アーティファクトを保存
-      - name: Upload firmware artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ inputs.keyboard }}-${{ inputs.keymap }}-firmware
-          path: |
-            qmk/.build/*.uf2
-            qmk/.build/*.hex
+# To support OLED
+OLED_ENABLE = no                # Please Enable this in each keymaps.
+SRC += lib/oledkit/oledkit.c    # OLED utility for Keyball series.
+
+# Include common library
+SRC += lib/keyball/keyball.c
+
+# Disable other features to squeeze firmware size
+SPACE_CADET_ENABLE = no
+GRAVE_ESC_ENABLE = no
+MAGIC_ENABLE = no
