@@ -41,7 +41,7 @@ jobs:
       with:
         repository: qmk/qmk_firmware
         path: __qmk__
-        ref: qmk-0.22.14
+        ref: 0.22.13
 
     - name: Install a link to own source
       run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyball
