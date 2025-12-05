@@ -39,10 +39,18 @@ jobs:
     - name: Checkout qmk_firmware
       uses: actions/checkout@v4
       with:
+        path: qmk_firmware
+        ref: qmk-0.22.14
         submodules: recursive
 
     #-- name: Install a link to own source
     #-  run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyball
+
+    - name: Prepare keyboard dir
+      run: mkdir -p qmk_firmware/keyboards/keyball
+
+    - name: Install a link to own source
+      run: ln -s $(pwd)/keyball39 qmk_firmware/keyboards/keyball/keyball39
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -60,7 +68,7 @@ jobs:
       shell: bash
       run: |
         cd qmk_firmware
-        make keyball39:${{ inputs.keymap }}
+        make keyball/keyball39:${{ inputs.keymap }}
 
     - name: Show QMK root contents
       run: ls -l qmk_firmware
