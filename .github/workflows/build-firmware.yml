@@ -1,24 +1,17 @@
 name: Build a firmware
 
 on:
-
   workflow_call:
     inputs:
-      qmk_version:
-        default: '0.22.14'
-        type: string
-        required: false
       keyboard:
         type: string
-        required: true
+        required: true     # 例: "keyball39"
       keymap:
         type: string
-        required: true
+        required: true     # 例: "default"
 
 jobs:
-
   build:
-
     name: Build a firmware ${{ inputs.keyboard }}:${{ inputs.keymap }}
 
     runs-on: ubuntu-22.04
@@ -28,54 +21,46 @@ jobs:
       PATH: "/usr/bin:/opt/uv/tools/qmk/bin:${PATH}"
 
     steps:
+      # あなたの keyball リポジトリをチェックアウト
+      - name: Checkout keyball repo
+        uses: actions/checkout@v4
 
-    - name: Show QMK version
-      run: |
-         qmk --version
+      - name: Show QMK CLI version
+        run: qmk --version
 
-    - name: Checkout source
-      uses: actions/checkout@v4
+      # 純正 QMK 0.22.14 をクローン（←ここがさっきまで ref ミスってたところ）
+      - name: Clone QMK 0.22.14
+        run: |
+          git clone https://github.com/qmk/qmk_firmware.git \
+            --depth 1 --recurse-submodules --shallow-submodules \
+            -b 0.22.14 qmk
 
-    - name: Checkout qmk_firmware
-      uses: actions/checkout@v4
-      with:
-        repository: qmk/qmk_firmware
-        path: qmk/qmk_firmware
-        ref: qmk-0.22.14
-        submodules: recursive
+      # keyball ディレクトリを QMK の keyboards/ にシンボリックリンク
+      # （あなたのリポジトリ側のパスに合わせてここは調整してね）
+      - name: Link keyball keyboard directory
+        run: |
+          cd qmk/keyboards
+          # あなたの repo に合わせて、元パスを変更
+          # 例: ./qmk_firmware/keyboards/keyball が存在するなら ↓ を使う
+          ln -s ../../qmk_firmware/keyboards/keyball keyball
+          ls keyball
 
-    #-- name: Install a link to own source
-    #-  run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyball
+      # ファームウェアビルド
+      - name: Build QMK
+        run: |
+          cd qmk
+          make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
-    - name: Prepare keyboard dir
-      run: mkdir -p qmk_firmware/keyboards/keyball
+      # できたファイルを確認して
+      - name: List build artifacts
+        run: |
+          ls -R qmk/.build
 
-    - name: Install a link to own source
-      run: ln -s $(pwd)/keyball39 qmk_firmware/keyboards/keyball/keyball39
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"  
-
-    #- name: Install QMK python dependencies (QMK venv)
-    #  run: |
-    #   /opt/uv/tools/qmk/bin/python3 -m pip install -r __qmk__/requirements.txt
-  
-    #- name: Import keyboard metadata
-    #  run: qmk import-keyboard __qmk__/keyboards/keyball/keyball39/info.json
-
-    - name: Build QMK
-      shell: bash
-      run: |
-        cd qmk_firmware
-        make keyball/keyball39:${{ inputs.keymap }}
-
-    - name: Show QMK root contents
-      run: ls -l qmk_firmware
-
-    - name: Archive built firmware
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ inputs.keyboard }}-${{ inputs.keymap }}-firmware
-        path: __qmk__/*.uf2
+      # uf2 or hex を artifact にアップロード
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.keyboard }}-${{ inputs.keymap }}-firmware
+          path: |
+            qmk/.build/*.uf2
+            qmk/.build/*.hex
