@@ -5,14 +5,14 @@ on:
     inputs:
       keyboard:
         type: string
-        required: true     # 例: "keyball39"
+        required: true
       keymap:
         type: string
-        required: true     # 例: "default"
+        required: true
 
 jobs:
   build:
-    name: Build a firmware ${{ inputs.keyboard }}:${{ inputs.keymap }}
+    name: Build firmware ${{ inputs.keyboard }}:${{ inputs.keymap }}
 
     runs-on: ubuntu-22.04
     container:
@@ -21,42 +21,33 @@ jobs:
       PATH: "/usr/bin:/opt/uv/tools/qmk/bin:${PATH}"
 
     steps:
-      # あなたの keyball リポジトリをチェックアウト
       - name: Checkout keyball repo
         uses: actions/checkout@v4
 
       - name: Show QMK CLI version
         run: qmk --version
 
-      # 純正 QMK 0.22.14 をクローン（←ここがさっきまで ref ミスってたところ）
       - name: Clone QMK 0.22.14
         run: |
           git clone https://github.com/qmk/qmk_firmware.git \
             --depth 1 --recurse-submodules --shallow-submodules \
             -b 0.22.14 qmk
 
-      # keyball ディレクトリを QMK の keyboards/ にシンボリックリンク
-      # （あなたのリポジトリ側のパスに合わせてここは調整してね）
       - name: Link keyball keyboard directory
         run: |
           cd qmk/keyboards
-          # あなたの repo に合わせて、元パスを変更
-          # 例: ./qmk_firmware/keyboards/keyball が存在するなら ↓ を使う
           ln -s ../../qmk_firmware/keyboards/keyball keyball
           ls keyball
 
-      # ファームウェアビルド
       - name: Build QMK
         run: |
           cd qmk
           make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
-      # できたファイルを確認して
       - name: List build artifacts
         run: |
           ls -R qmk/.build
 
-      # uf2 or hex を artifact にアップロード
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
