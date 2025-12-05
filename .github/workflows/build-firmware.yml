@@ -39,9 +39,7 @@ jobs:
     - name: Checkout qmk_firmware
       uses: actions/checkout@v4
       with:
-        repository: qmk/qmk_firmware
-        path: __qmk__
-        ref: 0.22.13
+        submodules: recursive
 
     - name: Install a link to own source
       run: ln -s $(pwd)/qmk_firmware/keyboards/keyball __qmk__/keyboards/keyball
@@ -51,9 +49,9 @@ jobs:
       with:
         python-version: "3.11"  
 
-    - name: Install QMK python dependencies (QMK venv)
-      run: |
-       /opt/uv/tools/qmk/bin/python3 -m pip install -r __qmk__/requirements.txt
+    #- name: Install QMK python dependencies (QMK venv)
+    #  run: |
+    #   /opt/uv/tools/qmk/bin/python3 -m pip install -r __qmk__/requirements.txt
   
     #- name: Import keyboard metadata
     #  run: qmk import-keyboard __qmk__/keyboards/keyball/keyball39/info.json
