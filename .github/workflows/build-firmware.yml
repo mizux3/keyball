@@ -61,7 +61,11 @@ jobs:
     - name: Build QMK
       shell: bash
       run: |
+        cd __qmk__
         make keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
+
+    - name: Show QMK root contents
+      run: ls -l __qmk__
 
     - name: Archive built firmware
       uses: actions/upload-artifact@v4
