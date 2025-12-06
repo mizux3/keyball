@@ -15,7 +15,7 @@ jobs:
     name: Build firmware ${{ inputs.keyboard }}:${{ inputs.keymap }}
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/qmk/qmk_cli:1.2.0
+      image: ghcr.io/qmk/qmk_cli:latest
     env:
       PATH: "/usr/bin:/opt/uv/tools/qmk/bin:${PATH}"
 
@@ -23,15 +23,12 @@ jobs:
       - name: Checkout keyball repo
         uses: actions/checkout@v4
 
-      - name: Show QMK version
-        run: qmk --version
-
-      - name: Clone latest QMK (master)
+      - name: Clone QMK develop branch (latest w/keyball support)
         run: |
           git clone https://github.com/qmk/qmk_firmware.git \
             --depth 1 --recurse-submodules \
-            -b master qmk_fw
-          ls -l qmk_fw/keyboards
+            -b develop qmk_fw
+          ls qmk_fw/keyboards | head -20
 
       - name: Link keyball keyboard directory
         run: |
@@ -52,7 +49,8 @@ jobs:
           make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
       - name: List build artifacts
-        run: ls -R qmk_fw/.build
+        run: |
+          ls -R qmk_fw/.build
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
