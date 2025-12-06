@@ -27,33 +27,34 @@ jobs:
       run: |
         git clone https://github.com/qmk/qmk_firmware.git \
           --depth 1 --recurse-submodules --shallow-submodules \
-          -b 0.22.14 qmk_fw
-        ls -l qmk_fw/keyboards
+          -b 0.22.14 qmk
+        ls -l qmk/keyboards
 
     - name: Link keyball keyboard into QMK
       run: |
-        cd qmk_fw
+        cd qmk
         mkdir -p keyboards/keyball
         ln -s $GITHUB_WORKSPACE/${{ inputs.keyboard }} keyboards/keyball/${{ inputs.keyboard }}
+        echo "==== keyboards/keyball ===="
         ls -R keyboards/keyball
 
     - name: Install QMK python dependencies
       run: |
-        cd qmk_fw
+        cd qmk
         /opt/uv/tools/qmk/bin/python3 -m pip install -r requirements.txt
 
     - name: Build
       run: |
-        cd qmk_fw
+        cd qmk
         make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
     - name: List artifacts
-      run: ls -R qmk_fw/.build
+      run: ls -R qmk/.build
 
     - name: Upload firmware
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.keyboard }}-${{ inputs.keymap }}-firmware
         path: |
-          qmk_fw/.build/*.uf2
-          qmk_fw/.build/*.hex
+          qmk/.build/*.uf2
+          qmk/.build/*.hex
