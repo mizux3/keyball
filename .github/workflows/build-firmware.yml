@@ -1,4 +1,4 @@
-name: Build a firmware
+name: Build firmware
 
 on:
   workflow_call:
@@ -12,50 +12,48 @@ on:
 
 jobs:
   build:
-    name: Build firmware ${{ inputs.keyboard }}:${{ inputs.keymap }}
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/qmk/qmk_cli:latest
-    env:
-      PATH: "/usr/bin:/opt/uv/tools/qmk/bin:${PATH}"
+      image: ghcr.io/qmk/qmk_cli:1.2.0
 
     steps:
-      - name: Checkout keyball repo
-        uses: actions/checkout@v4
+    - name: Checkout keyball repo
+      uses: actions/checkout@v4
 
-      - name: Clone QMK develop branch (latest w/keyball support)
-        run: |
-          git clone https://github.com/qmk/qmk_firmware.git \
-            --depth 1 --recurse-submodules \
-            -b develop qmk_fw
-          ls qmk_fw/keyboards | head -20
+    - name: Show QMK version
+      run: qmk --version
 
-      - name: Link keyball keyboard directory
-        run: |
-          mkdir -p qmk_fw/keyboards/keyball
-          ln -s $PWD/keyboards/keyball/keyball39 \
-            qmk_fw/keyboards/keyball/keyball39
-          echo "=== linked keyboard ==="
-          ls -R qmk_fw/keyboards/keyball
+    - name: Clone official QMK 0.22.14
+      run: |
+        git clone https://github.com/qmk/qmk_firmware.git \
+          --depth 1 --recurse-submodules --shallow-submodules \
+          -b 0.22.14 qmk_fw
+        ls -l qmk_fw/keyboards
 
-      - name: Install QMK python dependencies
-        run: |
-          cd qmk_fw
-          /opt/uv/tools/qmk/bin/python3 -m pip install -r requirements.txt
+    - name: Link keyball keyboard into QMK
+      run: |
+        cd qmk_fw
+        mkdir -p keyboards/keyball
+        ln -s $GITHUB_WORKSPACE/${{ inputs.keyboard }} keyboards/keyball/${{ inputs.keyboard }}
+        ls -R keyboards/keyball
 
-      - name: Build firmware
-        run: |
-          cd qmk_fw
-          make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
+    - name: Install QMK python dependencies
+      run: |
+        cd qmk_fw
+        /opt/uv/tools/qmk/bin/python3 -m pip install -r requirements.txt
 
-      - name: List build artifacts
-        run: |
-          ls -R qmk_fw/.build
+    - name: Build
+      run: |
+        cd qmk_fw
+        make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
-      - name: Upload firmware
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ inputs.keyboard }}-${{ inputs.keymap }}-firmware
-          path: |
-            qmk_fw/.build/*.uf2
-            qmk_fw/.build/*.hex
+    - name: List artifacts
+      run: ls -R qmk_fw/.build
+
+    - name: Upload firmware
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.keyboard }}-${{ inputs.keymap }}-firmware
+        path: |
+          qmk_fw/.build/*.uf2
+          qmk_fw/.build/*.hex
