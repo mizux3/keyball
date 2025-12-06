@@ -5,16 +5,16 @@ on:
     inputs:
       keyboard:
         type: string
-        required: true     # keyball39 / keyball44 など
+        required: true
       keymap:
         type: string
-        required: true     # default / via など
+        required: true
 
 jobs:
   build:
     name: Build firmware ${{ inputs.keyboard }}:${{ inputs.keymap }}
-
     runs-on: ubuntu-22.04
+
     container:
       image: ghcr.io/qmk/qmk_cli:1.2.0
 
@@ -22,48 +22,41 @@ jobs:
       PATH: "/usr/bin:/opt/uv/tools/qmk/bin:${PATH}"
 
     steps:
-      # あなたの keyball リポジトリ
       - name: Checkout keyball repo
         uses: actions/checkout@v4
 
       - name: Show QMK CLI version
         run: qmk --version
 
-      # QMK 0.22.14 を clone
       - name: Clone QMK 0.22.14
         run: |
           git clone https://github.com/qmk/qmk_firmware.git \
             --depth=1 --recurse-submodules --shallow-submodules \
             -b 0.22.14 qmk_fw
-          echo "==== QMK cloned ===="
-          ls -l qmk_fw
 
-      # keyball39 を QMK のキーボードフォルダへリンク
       - name: Link keyball keyboard into QMK
         run: |
-          mkdir -p qmk_fw/keyboards/keyball
-          ln -s $(pwd)/${{ inputs.keyboard }} qmk_fw/keyboards/keyball/${{ inputs.keyboard }}
-          echo "==== keyboards/keyball ===="
-          ls -R qmk_fw/keyboards/keyball
+          mkdir -p qmk_fw/keyboards/handwired/keyball
+          ln -s $(pwd)/${{ inputs.keyboard }} \
+                qmk_fw/keyboards/handwired/keyball/${{ inputs.keyboard }}
+          echo "==== keyboards/handwired/keyball ===="
+          ls -R qmk_fw/keyboards/handwired/keyball
 
-      # QMK Python 依存をインストール
       - name: Install QMK python dependencies
         run: |
           cd qmk_fw
           /opt/uv/tools/qmk/bin/python3 -m pip install -r requirements.txt || true
 
-      # ビルド
       - name: Build firmware
         run: |
           cd qmk_fw
-          make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
+          make -j8 SKIP_GIT=yes \
+            handwired/keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
-      # 生成物の表示
       - name: List build artifacts
         run: |
           ls -R qmk_fw/.build || true
 
-      # 成果物アップロード (.uf2 / .hex 自動対応)
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
