@@ -5,53 +5,69 @@ on:
     inputs:
       keyboard:
         type: string
-        required: true
+        required: true     # keyball39 / keyball44 など
       keymap:
         type: string
-        required: true
+        required: true     # default / via など
 
 jobs:
   build:
+    name: Build firmware ${{ inputs.keyboard }}:${{ inputs.keymap }}
+
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/qmk/qmk_cli:1.2.0
+
     env:
       PATH: "/usr/bin:/opt/uv/tools/qmk/bin:${PATH}"
 
     steps:
-      - uses: actions/checkout@v4
+      # あなたの keyball リポジトリ
+      - name: Checkout keyball repo
+        uses: actions/checkout@v4
 
-      - name: Show QMK version
+      - name: Show QMK CLI version
         run: qmk --version
 
+      # QMK 0.22.14 を clone
       - name: Clone QMK 0.22.14
         run: |
           git clone https://github.com/qmk/qmk_firmware.git \
-            --depth=1 --recurse-submodules -b 0.22.14 qmk_firmware
-          ls -l qmk_firmware
+            --depth=1 --recurse-submodules --shallow-submodules \
+            -b 0.22.14 qmk_fw
+          echo "==== QMK cloned ===="
+          ls -l qmk_fw
 
-      - name: Link keyboard into QMK
+      # keyball39 を QMK のキーボードフォルダへリンク
+      - name: Link keyball keyboard into QMK
         run: |
-          mkdir -p qmk_firmware/keyboards/keyball
-          ln -s $(pwd)/${{ inputs.keyboard }} qmk_firmware/keyboards/keyball/${{ inputs.keyboard }}
-          ls -R qmk_firmware/keyboards/keyball
+          mkdir -p qmk_fw/keyboards/keyball
+          ln -s $(pwd)/${{ inputs.keyboard }} qmk_fw/keyboards/keyball/${{ inputs.keyboard }}
+          echo "==== keyboards/keyball ===="
+          ls -R qmk_fw/keyboards/keyball
 
-      - name: Install QMK python deps
+      # QMK Python 依存をインストール
+      - name: Install QMK python dependencies
         run: |
-          cd qmk_firmware
+          cd qmk_fw
           /opt/uv/tools/qmk/bin/python3 -m pip install -r requirements.txt || true
 
+      # ビルド
       - name: Build firmware
         run: |
-          cd qmk_firmware
+          cd qmk_fw
           make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
-      - name: List artifacts
-        run: ls -R qmk_firmware/.build
+      # 生成物の表示
+      - name: List build artifacts
+        run: |
+          ls -R qmk_fw/.build || true
 
-      - uses: actions/upload-artifact@v4
+      # 成果物アップロード (.uf2 / .hex 自動対応)
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.keyboard }}-${{ inputs.keymap }}
           path: |
-            qmk_firmware/.build/*.uf2
-            qmk_firmware/.build/*.hex
+            qmk_fw/.build/*.uf2
+            qmk_fw/.build/*.hex
