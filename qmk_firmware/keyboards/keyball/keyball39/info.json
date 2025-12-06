@@ -6,6 +6,9 @@
     },
     "manufacturer": "Yowkees",
     "keyboard_name": "Keyball39",
+    "processor": "RP2040",
+    "bootloader": "rp2040",
+    "pico_sdk_version": "2.1.0",
     "rgblight": {
         "driver": "ws2812"
     },
