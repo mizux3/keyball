@@ -14,10 +14,8 @@ jobs:
   build:
     name: Build firmware ${{ inputs.keyboard }}:${{ inputs.keymap }}
     runs-on: ubuntu-22.04
-
     container:
       image: ghcr.io/qmk/qmk_cli:1.2.0
-
     env:
       PATH: "/usr/bin:/opt/uv/tools/qmk/bin:${PATH}"
 
@@ -25,42 +23,41 @@ jobs:
       - name: Checkout keyball repo
         uses: actions/checkout@v4
 
-      - name: Show QMK CLI version
+      - name: Show QMK version
         run: qmk --version
 
-      - name: Clone QMK 0.22.14
+      - name: Clone latest QMK (master)
         run: |
           git clone https://github.com/qmk/qmk_firmware.git \
-            --depth=1 --recurse-submodules --shallow-submodules \
-            -b 0.22.14 qmk_fw
+            --depth 1 --recurse-submodules \
+            -b master qmk_fw
+          ls -l qmk_fw/keyboards
 
-      - name: Link keyball keyboard into QMK
+      - name: Link keyball keyboard directory
         run: |
-          mkdir -p qmk_fw/keyboards/handwired/keyball
-          ln -s $(pwd)/${{ inputs.keyboard }} \
-                qmk_fw/keyboards/handwired/keyball/${{ inputs.keyboard }}
-          echo "==== keyboards/handwired/keyball ===="
-          ls -R qmk_fw/keyboards/handwired/keyball
+          mkdir -p qmk_fw/keyboards/keyball
+          ln -s $PWD/keyboards/keyball/keyball39 \
+            qmk_fw/keyboards/keyball/keyball39
+          echo "=== linked keyboard ==="
+          ls -R qmk_fw/keyboards/keyball
 
       - name: Install QMK python dependencies
         run: |
           cd qmk_fw
-          /opt/uv/tools/qmk/bin/python3 -m pip install -r requirements.txt || true
+          /opt/uv/tools/qmk/bin/python3 -m pip install -r requirements.txt
 
       - name: Build firmware
         run: |
           cd qmk_fw
-          make -j8 SKIP_GIT=yes \
-            handwired/keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
+          make -j8 SKIP_GIT=yes keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
       - name: List build artifacts
-        run: |
-          ls -R qmk_fw/.build || true
+        run: ls -R qmk_fw/.build
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.keyboard }}-${{ inputs.keymap }}
+          name: ${{ inputs.keyboard }}-${{ inputs.keymap }}-firmware
           path: |
             qmk_fw/.build/*.uf2
             qmk_fw/.build/*.hex
