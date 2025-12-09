@@ -17,36 +17,40 @@ jobs:
       image: ghcr.io/qmk/qmk_cli:1.2.0
 
     steps:
-    - name: Checkout keyball repo
+    # ここで keyball リポジトリのみ Checkout（qmk_firmware ではない！）
+    - name: Checkout this repository
       uses: actions/checkout@v4
 
     - name: Show QMK version
       run: qmk --version
 
+    # QMK 0.22.14 を qmk_firmware に clone（競合しない）
     - name: Clone official QMK 0.22.14
       run: |
         git clone https://github.com/qmk/qmk_firmware.git \
           --depth 1 --recurse-submodules --shallow-submodules \
           -b 0.22.14 qmk_firmware
+        ls -l qmk_firmware
 
-    - name: Copy keyball keyboard into correct folder
+    # Keyball39 を handwired 以下にコピー
+    - name: Copy keyball keyboard into QMK
       run: |
         mkdir -p qmk_firmware/keyboards/handwired/keyball
         cp -r $GITHUB_WORKSPACE/${{ inputs.keyboard }} \
               qmk_firmware/keyboards/handwired/keyball/${{ inputs.keyboard }}
-
-        echo "=== Installed Keyboard ==="
+        echo "==== keyboards/handwired/keyball ===="
         ls -R qmk_firmware/keyboards/handwired/keyball
 
-    - name: Install Python deps
+    - name: Install QMK python dependencies
       run: |
         cd qmk_firmware
         /opt/uv/tools/qmk/bin/python3 -m pip install -r requirements.txt
 
-    - name: Build
+    - name: Build QMK
       run: |
         cd qmk_firmware
-        make -j8 SKIP_GIT=yes handwired/keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
+        make -j8 SKIP_GIT=yes \
+          handwired/keyball/${{ inputs.keyboard }}:${{ inputs.keymap }}
 
     - name: Upload firmware
       uses: actions/upload-artifact@v4
